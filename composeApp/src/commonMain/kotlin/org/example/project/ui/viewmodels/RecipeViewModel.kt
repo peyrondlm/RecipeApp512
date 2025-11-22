@@ -68,7 +68,7 @@ class RecipeViewModel : ViewModel() {
         }
     }
 
-    fun saveRecipeInDb(){
+    fun saveRecipeInDb() {
         viewModelScope.launch {
             try {
                 val recipe = Recipe(
@@ -78,13 +78,16 @@ class RecipeViewModel : ViewModel() {
                     imageUrl = generatedRecipe?.imageUrl ?: "",
                     ingredients = generatedRecipe?.ingredients ?: listOf(),
                     instructions = generatedRecipe?.instructions ?: listOf(),
-                    minutes = generatedRecipe?.stars ?: 0,
+                    minutes = generatedRecipe?.minutes ?: 0,
                     stars = generatedRecipe?.stars ?: 0,
                     title = generatedRecipe?.title ?: ""
                 )
+
                 val result = recipeService.saveGeneratedRecipe(recipe = recipe)
-                print(result.toString())
-            }catch (e: Exception){
+
+                recipes = listOf(recipe) + recipes
+
+            } catch (e: Exception) {
                 println(e.toString())
             }
         }
