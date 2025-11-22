@@ -6,13 +6,15 @@ import kotlinx.coroutines.launch
 import org.example.project.data.ktorfitClient
 import org.example.project.domain.dtos.Login
 import org.example.project.domain.dtos.Register
+import org.example.project.domain.utils.Preferences
 
 class AuthViewModel : ViewModel(){
     fun register(
         name : String,
         email : String,
         password : String,
-        onResult:(Boolean, String) -> Unit){
+        onResult: (Boolean, String) -> Unit
+    ){
         viewModelScope.launch {
             try {
                 val service = ktorfitClient.createAuthService()
@@ -23,25 +25,27 @@ class AuthViewModel : ViewModel(){
                 )
                 val result = service.register(register)
                 if(result.isLogged){
-                    println("Logueao")
-                    onResult(true, result.message)
+                    println("Logueado")
+                    Preferences.saveUserId(result.userId)
+                    Preferences.saveIsLogged(result.isLogged)
+                    onResult(true,result.message)
                     println(result.toString())
                 }else{
+                    onResult(false,result.message)
                     println("No logueao")
-                    onResult(false, result.message)
                     println(result.toString())
                 }
             }catch (e : Exception){
-                onResult(false, "Error al registrar")
+                onResult(false, "Error al registrarte")
                 print(e.toString())
             }
         }
     }
 
     fun login(
-        email : String,
-        password : String,
-        onResult : (Boolean, String) -> Unit
+        email: String,
+        password: String,
+        onResult: (Boolean, String) -> Unit
     ){
         viewModelScope.launch {
             try {
@@ -51,12 +55,16 @@ class AuthViewModel : ViewModel(){
                     password = password
                 )
                 val result = service.login(login)
-                if(result.isLogged) {
+                if (result.isLogged){
+                    Preferences.saveUserId(result.userId)
+                    Preferences.saveIsLogged(result.isLogged)
                     onResult(true, result.message)
-                } else {
-                    onResult(false, result.message)
                 }
-            } catch(e: Exception) {
+                else{
+                    onResult(false, result.message )
+                }
+            }
+            catch (e :  Exception){
                 onResult(false, "Error al loguearse")
             }
         }

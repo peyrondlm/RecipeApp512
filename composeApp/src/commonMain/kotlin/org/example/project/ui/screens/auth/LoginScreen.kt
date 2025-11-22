@@ -29,33 +29,44 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import org.example.project.domain.utils.Preferences
+import org.example.project.ui.components.FullScreenLoading
+import org.example.project.ui.screens.HomeScreenRoute
 import org.example.project.ui.screens.LoginScreenRoute
-import org.example.project.ui.screens.MainScreenRoute
 import org.example.project.ui.screens.RegisterScreenRoute
 import org.example.project.ui.viewmodels.AuthViewModel
+import kotlin.reflect.KClass
 
 @Composable
-fun LoginScreen(navController: NavController){
+fun LoginScreen(
+    navController: NavController
+){
+    var isLogged by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
     val colors = MaterialTheme.colorScheme
-    val viewModel : AuthViewModel = viewModel()
-    var isLogged by remember {
-        mutableStateOf(false)
-    }
 
-    var email by remember {
-        mutableStateOf("")
-    }
+    val viewModel: AuthViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
+                return AuthViewModel() as T
+            }
+        }
+    )
 
-    var password by remember {
-        mutableStateOf("")
-    }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
-    LaunchedEffect(isLogged) {
-        if (isLogged) {
-            navController.navigate(MainScreenRoute) {
-                popUpTo(LoginScreenRoute) { inclusive = true }
+    isLogged = Preferences.getIsLogged()
+
+    LaunchedEffect(isLogged){
+        if(isLogged){
+            navController.navigate(HomeScreenRoute){
+                popUpTo(LoginScreenRoute){ inclusive = true }
             }
         }
     }
@@ -65,11 +76,7 @@ fun LoginScreen(navController: NavController){
             .fillMaxSize()
             .background(colors.background)
     ){
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        )
-        {
+        Column(modifier = Modifier.fillMaxSize()){
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -77,10 +84,9 @@ fun LoginScreen(navController: NavController){
                     .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
                     .background(colors.primary)
             )
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(2f)
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .weight(2f)
             )
         }
 
@@ -97,58 +103,56 @@ fun LoginScreen(navController: NavController){
             verticalArrangement = Arrangement.SpaceAround,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Bienvenido"
-            )
+            Text(text = "Bienvenido")
             OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 value = email,
                 shape = CircleShape,
                 onValueChange = { email = it },
                 singleLine = true,
-                placeholder = {
-                    Text(
-                        text = "Correo Electronico"
-                    )
-                }
+                enabled = !isLoading,
+                placeholder = { Text(text = "Correo Electronico") }
             )
             OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 value = password,
                 shape = CircleShape,
                 onValueChange = { password = it },
                 singleLine = true,
-                placeholder = {
-                    Text(
-                        text = "Contraseña"
-                    )
-                },
+                enabled = !isLoading,
+                placeholder = { Text(text = "Contraseña") },
                 visualTransformation = PasswordVisualTransformation()
             )
             Button(
                 onClick = {
+                    isLoading = true
                     viewModel.login(
                         email = email,
                         password = password
-                    ) { result, message ->
-                        if(result) isLogged = true
+                    ){ result, message ->
+                        isLoading = false
+                        if (result) isLogged = true
+                        else {
+                        }
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
             ){
-                Text(
-                    text = "Iniciar Sesion"
-                )
+                Text(text = "Iniciar Sesion")
             }
             Text(
                 text = "¿No tienes una cuenta? Crea una",
                 color = colors.primary,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .clickable{navController.navigate(RegisterScreenRoute)}
+                modifier = Modifier.clickable(enabled = !isLoading) {
+                    navController.navigate(RegisterScreenRoute)
+                }
             )
+        }
+
+        if (isLoading) {
+            FullScreenLoading(message = "Cargando...")
         }
     }
 }

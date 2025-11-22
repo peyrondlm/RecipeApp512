@@ -2,6 +2,7 @@ package org.example.project.data
 
 import de.jensklingenberg.ktorfit.Ktorfit
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.accept
@@ -10,22 +11,26 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.example.project.data.services.AuthService
+import org.example.project.data.services.RecipeService
 import org.example.project.data.services.createAuthService
+import org.example.project.data.services.createRecipeService
 
-//HTTP 200
 object ktorfitClient{
-
-    //Basicamente
     val httpClient = HttpClient{
-        expectSuccess = false //para permitir status code de error en la app
+        expectSuccess = false
         install(ContentNegotiation) {
             json(
                 Json {
-                    isLenient = true //Permite JSONs imperfectos
-                    ignoreUnknownKeys = true // ignora las propiedades que no se quieren mapear
+                    isLenient = true
+                    ignoreUnknownKeys = true
                 }
 
             )
+        }
+        install(HttpTimeout){
+            requestTimeoutMillis = 40000
+            socketTimeoutMillis = 40000
+            connectTimeoutMillis = 40000
         }
         defaultRequest {
             contentType(ContentType.Application.Json)
@@ -43,5 +48,9 @@ object ktorfitClient{
 
     fun createAuthService(): AuthService{
         return ktorfit.createAuthService()
+    }
+
+    fun createRecipeService(): RecipeService{
+        return ktorfit.createRecipeService()
     }
 }

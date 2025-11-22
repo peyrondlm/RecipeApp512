@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Header() {
+fun Header(onLogout: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Row (
         modifier = Modifier
@@ -39,11 +39,10 @@ fun Header() {
                 fontWeight = FontWeight.Light
             )
             Text(
-                text = "Juan Frausto",
+                text = "Pedro López",
                 fontWeight = FontWeight.Bold
             )
         }
-        // Fin del column
         Box (
             modifier = Modifier
                 .size(40.dp)
@@ -52,18 +51,17 @@ fun Header() {
             contentAlignment = Alignment.Center
         ){
             Text(
-                text = "J"
+                text = "P"
             )
         }
-        // Fin del box
         Spacer(
             modifier = Modifier.width(10.dp)
         )
         IconButton(
-            onClick = { }
+            onClick = onLogout
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.Logout,
+                imageVector = Icons.Default.Logout,
                 contentDescription = null,
                 tint = colors.primary
             )

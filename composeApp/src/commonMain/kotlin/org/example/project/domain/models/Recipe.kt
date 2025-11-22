@@ -1,0 +1,16 @@
+package org.example.project.domain.models
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Recipe(
+    val userId: Int,
+    val category: String,
+    val id: Int,
+    val imageUrl: String?,
+    val ingredients: List<String>,
+    val instructions: List<String>,
+    val minutes: Int,
+    val stars: Int,
+    val title: String
+)

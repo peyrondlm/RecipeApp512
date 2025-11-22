@@ -24,30 +24,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import org.example.project.ui.components.FullScreenLoading
 import org.example.project.ui.screens.MainScreenRoute
 import org.example.project.ui.screens.RegisterScreenRoute
 import org.example.project.ui.viewmodels.AuthViewModel
+import kotlin.reflect.KClass
 
 @Composable
 fun RegisterScreen(navController: NavController){
     val colors = MaterialTheme.colorScheme
-    val viewModel : AuthViewModel = viewModel()
-    var name by remember {
-        mutableStateOf("")
-    }
-    var email by remember {
-        mutableStateOf("")
-    }
-    var password by remember {
-        mutableStateOf("")
-    }
-    var confirmPassword by remember {
-        mutableStateOf("")
-    }
+    val viewModel : AuthViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
+                return AuthViewModel() as T
+            }
+        }
+    )
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -83,15 +90,18 @@ fun RegisterScreen(navController: NavController){
 
         ) {
             Text(
-                text = "Crear cuenta"
+                text = "Crear cuenta",
+                fontWeight = FontWeight.Bold,
+                fontSize = 30.sp
             )
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth(),
                 value = name,
                 shape = CircleShape,
-                onValueChange = { name = it },
+                onValueChange = { name = it},
                 singleLine = true,
+                enabled = !isLoading,
                 placeholder = {
                     Text(
                         text = "Nombre"
@@ -103,8 +113,9 @@ fun RegisterScreen(navController: NavController){
                     .fillMaxWidth(),
                 value = email,
                 shape = CircleShape,
-                onValueChange = { email = it},
+                onValueChange = { email = it },
                 singleLine = true,
+                enabled = !isLoading,
                 placeholder = {
                     Text(
                         text = "Correo Electronico"
@@ -118,6 +129,7 @@ fun RegisterScreen(navController: NavController){
                 shape = CircleShape,
                 onValueChange = { password = it },
                 singleLine = true,
+                enabled = !isLoading,
                 placeholder = {
                     Text(
                         text = "Contraseña"
@@ -132,6 +144,7 @@ fun RegisterScreen(navController: NavController){
                 shape = CircleShape,
                 onValueChange = { confirmPassword = it },
                 singleLine = true,
+                enabled = !isLoading,
                 placeholder = {
                     Text(
                         text = "Confirmar contraseña"
@@ -141,43 +154,48 @@ fun RegisterScreen(navController: NavController){
             )
             Button(
                 onClick = {
-                    if(name.isBlank() ||
+                    if (
+                        name.isBlank() ||
                         email.isBlank() ||
                         password.isBlank() ||
                         confirmPassword.isBlank()
-                        ) {
-                        // Algún field esta en blanco
+                    ){
                         return@Button
                     }
 
-                    if(password != confirmPassword) {
-                        // Las contraseñas no coinciden
+                    if (password != confirmPassword){
                         return@Button
                     }
 
+                    isLoading = true
                     viewModel.register(
                         name = name,
                         email = email,
                         password = password
-                    ) { result, message ->
-                        if(result){
+                    ){ result, message ->
+                        isLoading = false
+                        if (result){
                             navController.navigate(MainScreenRoute){
-                                popUpTo(RegisterScreenRoute){
+                                popUpTo(RegisterScreenRoute) {
                                     inclusive = true
                                 }
                             }
-                        } else {
-                            // Mostrar un error
-                            println(message)
+                        }else{
+                            print(message)
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
             ){
                 Text(
                     text = "Registrarse"
                 )
             }
+        }
+
+        if (isLoading) {
+            FullScreenLoading(message = "Cargando...")
         }
     }
 }

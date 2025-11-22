@@ -1,4 +1,4 @@
-package org.example.project.ui
+package org.example.project.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -6,6 +6,20 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import org.example.project.ui.BackgroundColorDark
+import org.example.project.ui.BackgroundColorLight
+import org.example.project.ui.OutlineDark
+import org.example.project.ui.OutlineLight
+import org.example.project.ui.PrimaryColorDark
+import org.example.project.ui.PrimaryColorLight
+import org.example.project.ui.SecondaryColorDark
+import org.example.project.ui.SecondaryColorLight
+import org.example.project.ui.SurfaceColorDark
+import org.example.project.ui.SurfaceColorLight
+import org.example.project.ui.TextPrimaryDark
+import org.example.project.ui.TextPrimaryLight
+import org.example.project.ui.TextSecondaryDark
+import org.example.project.ui.TextSecondaryLight
 
 private val LightColors = lightColorScheme(
     primary = PrimaryColorLight,
@@ -40,6 +54,7 @@ fun RecipeTheme(
     val colors = if(isSystemInDarkTheme()) DarkColors else LightColors
     MaterialTheme(
         colorScheme = colors,
-        content = content
+        content = content,
+        typography = stackSansTypography()
     )
 }
